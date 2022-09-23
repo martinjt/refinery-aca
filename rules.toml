@@ -1,0 +1,67 @@
+############################
+## Sampling Rules Config ##
+############################
+Sampler = "DeterministicSampler"
+SampleRate = 1
+
+[sandbox]
+	Sampler = "DynamicSampler"
+	SampleRate = 2
+	FieldList = ["request.method","response.status_code"]
+	UseTraceLength = true
+	AddSampleRateKeyToTrace = true
+	AddSampleRateKeyToTraceField = "meta.refinery.dynsampler_key"
+	ClearFrequencySec = 60
+
+[development]
+	Sampler = "RulesBasedSampler"
+	CheckNestedFields = false
+
+	[[development.rule]]
+		name = "drop healthchecks"
+		drop = true
+		[[development.rule.condition]]
+			field = "http.route"
+			operator = "contains"
+			value = "/health"
+
+	[[development.rule]]
+		name = "keep slow 500 errors"
+		SampleRate = 1
+		[[development.rule.condition]]
+			field = "status_code"
+			operator = "="
+			value = 500
+		[[development.rule.condition]]
+			field = "duration_ms"
+			operator = ">="
+			value = 1000.789
+
+	[[development.rule]]
+		name = "dynamically sample 200 responses"
+		[[development.rule.condition]]
+			field = "status_code"
+			operator = "="
+			value = 200
+		[development.rule.sampler.EMADynamicSampler]
+			Sampler = "EMADynamicSampler"
+			GoalSampleRate = 15
+			FieldList = ["request.method", "request.route"]
+			AddSampleRateKeyToTrace = true
+			AddSampleRateKeyToTraceField = "meta.refinery.dynsampler_key_200s"
+
+	[[development.rule]]
+		name = "sample traces originating from a service"
+		Scope = "span"
+		SampleRate = 5
+		[[development.rule.condition]]
+			field = "service name"
+			operator = "="
+			value = "users"
+		[[development.rule.condition]]
+			field = "meta.span_type"
+			operator = "="
+			value = "root"
+
+	[[development.rule]]
+		SampleRate = 10 # default when no rules match, if missing defaults to 10

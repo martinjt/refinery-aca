@@ -1,0 +1,60 @@
+#####################
+## Refinery Config ##
+#####################
+ListenAddr = "0.0.0.0:8080"
+GRPCListenAddr = "0.0.0.0:9090"
+PeerListenAddr = "0.0.0.0:8081"
+CompressPeerCommunication = true
+APIKeys = ["*"]
+HoneycombAPI = "https://api.honeycomb.io"
+SendDelay = "2s"
+TraceTimeout = "60s"
+MaxBatchSize = 500
+SendTicker = "100ms"
+LoggingLevel = "debug"
+UpstreamBufferSize = 10000
+PeerBufferSize = 10000
+AddHostMetadataToTrace = false
+AddRuleReasonToTrace = true
+
+############################
+## Implementation Choices ##
+############################
+Collector = "InMemCollector"
+Logger = "honeycomb"
+Metrics = "honeycomb"
+
+#########################
+## Peer Management     ##
+#########################
+
+[PeerManagement]
+Type = "file"
+Peers = ["http://127.0.0.1:8081"]
+
+#########################
+## In-Memory Collector ##
+#########################
+
+[InMemCollector]
+CacheCapacity = 1000
+MaxAlloc = 0
+
+######################
+## Honeycomb Logger ##
+######################
+
+[HoneycombLogger]
+LoggerHoneycombAPI = "https://api.honeycomb.io"
+LoggerDataset = "Refinery Logs"
+LoggerSamplerEnabled = true
+LoggerSamplerThroughput = 10
+
+#######################
+## Honeycomb Metrics ##
+#######################
+
+[HoneycombMetrics]
+MetricsHoneycombAPI = "https://api.honeycomb.io"
+MetricsDataset = "Refinery Metrics"
+MetricsReportingInterval = 15
